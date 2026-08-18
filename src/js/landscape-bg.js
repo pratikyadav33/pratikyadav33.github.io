@@ -18,7 +18,7 @@
   let currentCamera = {
     azimuth: 0.75,
     elevation: 0.55,
-    zoomMul: 1.08,
+    zoomMul: 1.38,
   };
 
   const rand = (a, b) => a + Math.random() * (b - a);
@@ -61,19 +61,19 @@
   const HOLD_MS = 16000;
 
   const CAMERA_TOUR = [
-    { azimuth: 0.75, elevation: 0.55, zoomMul: 1.08 },
-    { azimuth: 1.1, elevation: 0.48, zoomMul: 1.1 },
-    { azimuth: 1.45, elevation: 0.38, zoomMul: 1.12 },
-    { azimuth: 1.8, elevation: 0.3, zoomMul: 1.14 },
-    { azimuth: 2.15, elevation: 0.24, zoomMul: 1.16 },
-    { azimuth: 2.5, elevation: 0.16, zoomMul: 1.15 },
-    { azimuth: 2.85, elevation: 0.06, zoomMul: 1.13 },
-    { azimuth: 3.15, elevation: -0.1, zoomMul: 1.11 },
-    { azimuth: 3.45, elevation: 0.02, zoomMul: 1.12 },
-    { azimuth: 3.75, elevation: 0.18, zoomMul: 1.1 },
-    { azimuth: 4.05, elevation: 0.32, zoomMul: 1.09 },
-    { azimuth: 4.35, elevation: 0.44, zoomMul: 1.08 },
-    { azimuth: 4.65, elevation: 0.52, zoomMul: 1.08 },
+    { azimuth: 0.75, elevation: 0.55, zoomMul: 1.38 },
+    { azimuth: 1.1, elevation: 0.48, zoomMul: 1.42 },
+    { azimuth: 1.45, elevation: 0.38, zoomMul: 1.46 },
+    { azimuth: 1.8, elevation: 0.3, zoomMul: 1.5 },
+    { azimuth: 2.15, elevation: 0.24, zoomMul: 1.54 },
+    { azimuth: 2.5, elevation: 0.16, zoomMul: 1.52 },
+    { azimuth: 2.85, elevation: 0.06, zoomMul: 1.48 },
+    { azimuth: 3.15, elevation: -0.1, zoomMul: 1.44 },
+    { azimuth: 3.45, elevation: 0.02, zoomMul: 1.46 },
+    { azimuth: 3.75, elevation: 0.18, zoomMul: 1.42 },
+    { azimuth: 4.05, elevation: 0.32, zoomMul: 1.4 },
+    { azimuth: 4.35, elevation: 0.44, zoomMul: 1.38 },
+    { azimuth: 4.65, elevation: 0.52, zoomMul: 1.38 },
   ];
 
   let tourIndex = 0;
