@@ -1,0 +1,13 @@
+{
+  "name": "pratikyadav33.github.io",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "eleventy --serve --port 4000",
+    "build": "eleventy"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.2"
+  }
+}

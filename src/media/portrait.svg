@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 800" role="img" aria-label="Portrait placeholder">
+  <rect width="640" height="800" fill="#e7dfd0"/>
+  <rect x="36" y="36" width="568" height="728" fill="none" stroke="#1c1915" stroke-width="2"/>
+  <text x="320" y="390" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#6b6458">Portrait</text>
+  <text x="320" y="430" text-anchor="middle" font-family="Georgia, serif" font-size="16" fill="#6b6458">src/media/portrait.jpg</text>
+</svg>

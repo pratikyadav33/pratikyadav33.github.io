@@ -1,0 +1,26 @@
+[
+  {
+    "name": "PEFT",
+    "url": "https://github.com/pratikyadav33/PEFT",
+    "blurb": "Parameter-efficient fine-tuning experiments.",
+    "image": "/media/work-1.svg"
+  },
+  {
+    "name": "VideoMAEv2",
+    "url": "https://github.com/pratikyadav33/VideoMAEv2",
+    "blurb": "Video masked autoencoder work.",
+    "image": "/media/work-2.svg"
+  },
+  {
+    "name": "covidhelper",
+    "url": "https://github.com/pratikyadav33/covidhelper",
+    "blurb": "COVID resource helper.",
+    "image": "/media/work-3.svg"
+  },
+  {
+    "name": "Neural-Network-Visualizer",
+    "url": "https://github.com/pratikyadav33/Neural-Network-Visualizer",
+    "blurb": "Visualizing neural networks.",
+    "image": "/media/work-4.svg"
+  }
+]

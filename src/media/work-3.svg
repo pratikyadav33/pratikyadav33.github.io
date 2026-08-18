@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img">
+  <rect width="800" height="500" fill="#e4d3c2"/>
+  <rect x="24" y="24" width="752" height="452" fill="none" stroke="#1c1915" stroke-width="2"/>
+  <text x="400" y="255" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#6b6458">Work image 3</text>
+</svg>

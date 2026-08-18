@@ -1,0 +1,88 @@
+---
+layout: layout.njk
+title: Home
+---
+
+<section class="split hero">
+  <div class="hero-image">
+    <img src="/media/portrait.svg" alt="{{ site.name }}">
+  </div>
+
+  <div class="hero-copy">
+    <p class="kicker">Profile</p>
+    <h1>{{ site.name }}</h1>
+    <p class="lede">A public notebook with a two-column landing canvas: image on one side, writing on the other.</p>
+    <p>Edit copy in <code>src/index.njk</code>. Replace the placeholders in <code>src/media/</code>. This page is HTML on purpose so the columns, image frames, and crop stay under your control.</p>
+    <p class="hero-links">
+      <a href="/#education">Education</a>
+      <a href="/writing/">Writing</a>
+      <a href="/notes/">Notes</a>
+      <a href="https://github.com/{{ site.github }}">GitHub</a>
+    </p>
+  </div>
+</section>
+
+<section class="split boards">
+  <div>
+    <h2>Selected work</h2>
+    <ul class="cards">
+      {% for project in projects %}
+      <li>
+        <a class="card-media" href="{{ project.url }}">
+          <span class="canvas canvas--card">
+            <img src="{{ project.image }}" alt="">
+          </span>
+        </a>
+        <a class="card-title" href="{{ project.url }}">{{ project.name }}</a>
+        <p>{{ project.blurb }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div>
+    <h2>Recent writing</h2>
+    {% if collections.posts.length %}
+    <ul class="item-list">
+      {% for post in collections.posts.slice(0, 5) %}
+      <li>
+        <span class="meta">{{ post.date | readableDate }}</span>
+        <a href="{{ post.url }}">{{ post.data.title }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">No posts yet.</p>
+    {% endif %}
+
+    <h2>Notes</h2>
+    {% if collections.notes.length %}
+    <ul class="item-list">
+      {% for note in collections.notes %}
+      <li>
+        <span class="meta">Note</span>
+        <a href="{{ note.url }}">{{ note.data.title }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">No notes yet.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="education" id="education">
+  <h2>Education</h2>
+  <ul class="item-list education-list">
+    {% for item in education %}
+    <li>
+      <span class="meta">{% if item.years %}{{ item.years }}{% else %}—{% endif %}</span>
+      <div>
+        <span class="school">{{ item.school }}</span>
+        {% if item.degree %}<p>{{ item.degree }}</p>{% endif %}
+        {% if item.detail %}<p>{{ item.detail }}</p>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
