@@ -11,22 +11,16 @@
     <canvas id="landscape-bg" aria-hidden="true"></canvas>
     <div class="page">
       <header class="site-header">
-        <a class="wordmark" href="/">{{ site.name }}</a>
-        <nav>
-          <a href="/#research">Research</a>
-          <a href="/#agents">Agents</a>
-          <a href="/#education">Education</a>
-          <a href="/writing/"{% if "/writing/" in page.url %} aria-current="page"{% endif %}>Writing</a>
-          <a href="/notes/"{% if "/notes/" in page.url %} aria-current="page"{% endif %}>Notes</a>
-          <a href="https://github.com/{{ site.github }}">GitHub</a>
-        </nav>
+        <div class="site-title-block">
+          <a class="wordmark" href="/">{{ site.name }}</a>
+          <p class="site-subtitle">{{ site.title }}</p>
+        </div>
       </header>
+      {% if page.url != "/" %}
       <main>
         {{ content | safe }}
       </main>
-      <footer class="site-footer">
-        <p>Local preview · {{ site.github }}.github.io</p>
-      </footer>
+      {% endif %}
     </div>
     <script src="/js/landscape-bg.js"></script>
   </body>
