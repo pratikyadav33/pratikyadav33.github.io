@@ -2,9 +2,9 @@
   --bg: transparent;
   --ink: #f1f5f9;
   --muted: #94a3b8;
-  --line: rgba(148, 163, 184, 0.35);
-  --accent: #38bdf8;
-  --accent-soft: #fbbf24;
+  --accent: #97ce4c;
+  --accent-soft: #c026d3;
+  --line: rgba(151, 206, 76, 0.35);
   --canvas: rgba(15, 23, 42, 0.55);
   --measure: 42rem;
   --canvas-width: 72rem;
@@ -20,19 +20,68 @@ html {
 
 body {
   margin: 0;
-  background: #0f172a;
+  background: #0a0618;
   color: var(--ink);
-  font-family: Georgia, "Iowan Old Style", Palatino, "Palatino Linotype", serif;
+  font-family: "Comic Sans MS", "Chalkboard SE", "Segoe UI", sans-serif;
   line-height: 1.65;
 }
 
-#landscape-bg {
+.rick-site h1,
+.rick-site h2,
+.rick-site h3,
+.rick-site .wordmark {
+  font-family: "Comic Sans MS", "Chalkboard SE", cursive;
+}
+
+.rick-site .site-header,
+.rick-site main,
+.rick-site .rick-panel {
+  border-color: rgba(151, 206, 76, 0.45);
+}
+
+.rick-panel {
+  max-width: var(--canvas-width);
+  margin: 0 auto 3rem;
+  padding: 1.25rem 1.5rem;
+  border: 3px solid var(--line);
+  background: rgba(10, 6, 24, 0.62);
+  box-shadow: 0 0 0 2px #111;
+}
+
+.rick-panel p {
+  margin: 0 0 1rem;
+  max-width: 46rem;
+}
+
+.tag-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.tag-list li {
+  padding: 0.25rem 0.65rem;
+  border: 2px solid #111;
+  background: rgba(151, 206, 76, 0.2);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+#rick-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+#simulation-bg {
+  display: none;
 }
 
 .page {
@@ -82,8 +131,10 @@ body.home .site-footer {
   margin-top: 0.75rem;
   padding-top: 1.15rem;
   padding-bottom: 1rem;
-  border: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  border: 3px solid var(--line);
+  border-bottom: 3px solid var(--line);
+  background: rgba(10, 6, 24, 0.55);
+  box-shadow: 0 0 0 2px #111;
 }
 
 .wordmark {
@@ -113,8 +164,8 @@ nav a[aria-current="page"] {
 main {
   padding-top: 2.5rem;
   padding-bottom: 3.5rem;
-  border-left: 1px solid var(--line);
-  border-right: 1px solid var(--line);
+  border-left: 3px solid var(--line);
+  border-right: 3px solid var(--line);
 }
 
 h1,
@@ -192,7 +243,8 @@ h2 {
   width: 100%;
   max-width: 22rem;
   height: auto;
-  border: 1px solid var(--line);
+  border: 3px solid var(--line);
+  box-shadow: 0 0 0 2px #111;
 }
 
 .canvas {
@@ -369,8 +421,10 @@ h2 {
   padding-bottom: 1.4rem;
   color: var(--muted);
   font-size: 0.88rem;
-  border: 1px solid var(--line);
+  border: 3px solid var(--line);
   border-top: 0;
+  background: rgba(10, 6, 24, 0.55);
+  box-shadow: 0 0 0 2px #111;
 }
 
 .site-footer p {
@@ -397,6 +451,171 @@ pre code {
   border: 0;
 }
 
+.citadel-banner {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  border-bottom: 3px solid #111;
+  background: linear-gradient(180deg, #120a24 0%, #0a0618 100%);
+  box-shadow: 0 4px 24px rgba(151, 206, 76, 0.12);
+}
+
+.citadel-skyline {
+  height: 3.2rem;
+  background: url("/media/citadel-skyline.svg") center bottom / cover no-repeat;
+  opacity: 0.95;
+}
+
+.citadel-inner {
+  text-align: center;
+  padding: 0.55rem 1rem 0.85rem;
+}
+
+.citadel-badge {
+  margin: 0;
+  font-family: "Comic Sans MS", "Chalkboard SE", cursive;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(151, 206, 76, 0.45);
+}
+
+.citadel-sub {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.portrait-btn {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  max-width: 22rem;
+}
+
+.portrait-btn img {
+  display: block;
+  width: 100%;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.portrait-btn:hover img,
+.portrait-btn:focus-visible img {
+  transform: scale(1.02);
+  filter: drop-shadow(0 0 12px rgba(151, 206, 76, 0.45));
+}
+
+.portrait-hint {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.agent-control {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin: 1.25rem 0;
+  padding: 0.85rem 1rem;
+  border: 2px solid #111;
+  background: rgba(151, 206, 76, 0.08);
+}
+
+.agent-control label {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+.agent-control input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.agent-control output {
+  min-width: 2rem;
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-soft);
+}
+
+.agent-control-note {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.pickle-hint {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0 0.15rem;
+  vertical-align: middle;
+  transition: transform 0.15s ease;
+}
+
+.pickle-hint:hover {
+  transform: scale(1.25) rotate(-8deg);
+}
+
+.pickle-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 2rem;
+  z-index: 99;
+  transform: translateX(-50%);
+  padding: 0.75rem 1.25rem;
+  border: 3px solid #111;
+  background: rgba(132, 204, 22, 0.95);
+  color: #111;
+  font-family: "Comic Sans MS", "Chalkboard SE", cursive;
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  animation: pickle-pop 0.35s ease;
+}
+
+.pickle-toast[hidden] {
+  display: none;
+}
+
+@keyframes pickle-pop {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+body.pickle-mode {
+  --accent: #84cc16;
+  --accent-soft: #bef264;
+}
+
+body.pickle-mode .citadel-badge {
+  color: #84cc16;
+  text-shadow: 0 0 12px rgba(132, 204, 22, 0.55);
+}
+
+body.pickle-mode .hero-image img,
+body.pickle-mode .portrait-btn img {
+  filter: drop-shadow(0 0 16px rgba(132, 204, 22, 0.5));
+}
+
 @media (max-width: 860px) {
   .split,
   .cards {
@@ -412,8 +631,12 @@ pre code {
     font-size: 1.9rem;
   }
 
-  .item-list li {
+  .agent-control {
     grid-template-columns: 1fr;
-    gap: 0.15rem;
+  }
+
+  .citadel-badge {
+    font-size: 0.88rem;
+    letter-spacing: 0.08em;
   }
 }

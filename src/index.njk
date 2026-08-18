@@ -5,26 +5,49 @@ title: Home
 
 <section class="split hero">
   <div class="hero-image">
-    <img src="/media/portrait.svg" alt="{{ site.name }}">
+    <button type="button" class="portrait-btn" id="rick-portrait" aria-label="Rick Sanchez portrait — click for surprise">
+      <img src="/media/rick-portrait.svg" alt="" id="rick-portrait-img">
+    </button>
+    <p class="portrait-hint">click portrait · or 🥒 below</p>
   </div>
 
   <div class="hero-copy">
-    <p class="kicker">Profile</p>
+    <p class="kicker">Citadel of Ricks · Dimension C-137</p>
     <h1>{{ site.name }}</h1>
-    <p class="lede">A public notebook with a two-column landing canvas: image on one side, writing on the other.</p>
-    <p>Edit copy in <code>src/index.njk</code>. Replace the placeholders in <code>src/media/</code>. This page is HTML on purpose so the columns, image frames, and crop stay under your control.</p>
+    <p class="lede">{{ site.title }}. I build autonomous agents that crawl loss manifolds so I don't have to. *burp* Science.</p>
+    <p>This is my public lab log — publications, failed experiments, and notes on gradient descent across infinite realities. No lakes. No hills. Just math, portals, and contempt for local minima.</p>
     <p class="hero-links">
-      <a href="/#education">Education</a>
-      <a href="/writing/">Writing</a>
-      <a href="/notes/">Notes</a>
-      <a href="https://github.com/{{ site.github }}">GitHub</a>
+      <a href="/#research">Research</a>
+      <a href="/#agents">Agents</a>
+      <a href="/#education">Credentials</a>
+      <a href="/writing/">Lab log</a>
+      <a href="/notes/">Field notes</a>
     </p>
   </div>
 </section>
 
-<section class="split boards">
+<section class="rick-panel" id="agents">
+  <h2>Autonomous research agents</h2>
+  <p>Instead of hand-tuning hyperparameters like some kind of <em>Morty</em>, I deploy agent swarms on the loss surface behind this page. Each agent runs stochastic gradient descent on a morphing manifold — the green trails are convergence paths, the portals are… shortcuts. Don't touch the red button.</p>
+
+  <div class="agent-control">
+    <label for="agent-count">Agent swarm size</label>
+    <input type="range" id="agent-count" min="3" max="48" value="18" step="1">
+    <output id="agent-count-val" for="agent-count">18</output>
+    <span class="agent-control-note">More agents = more chaos. Rick approved.</span>
+  </div>
+
+  <ul class="tag-list">
+    <li>Multi-agent SGD</li>
+    <li>Non-convex optimization</li>
+    <li>Interdimensional regularization</li>
+    <li>Portal-based learning rate warmup</li>
+  </ul>
+</section>
+
+<section class="split boards" id="research">
   <div>
-    <h2>Selected work</h2>
+    <h2>Selected research</h2>
     <ul class="cards">
       {% for project in projects %}
       <li>
@@ -41,7 +64,7 @@ title: Home
   </div>
 
   <div>
-    <h2>Recent writing</h2>
+    <h2>Recent lab log</h2>
     {% if collections.posts.length %}
     <ul class="item-list">
       {% for post in collections.posts.slice(0, 5) %}
@@ -52,10 +75,10 @@ title: Home
       {% endfor %}
     </ul>
     {% else %}
-    <p class="empty">No posts yet.</p>
+    <p class="empty">No experiments logged yet. Typical.</p>
     {% endif %}
 
-    <h2>Notes</h2>
+    <h2>Field notes</h2>
     {% if collections.notes.length %}
     <ul class="item-list">
       {% for note in collections.notes %}
@@ -66,13 +89,13 @@ title: Home
       {% endfor %}
     </ul>
     {% else %}
-    <p class="empty">No notes yet.</p>
+    <p class="empty">No field notes. Go explore a manifold.</p>
     {% endif %}
   </div>
 </section>
 
 <section class="education" id="education">
-  <h2>Education</h2>
+  <h2>Credentials (disputed)</h2>
   <ul class="item-list education-list">
     {% for item in education %}
     <li>

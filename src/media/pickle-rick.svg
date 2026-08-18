@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" role="img" aria-label="Pickle scientist">
+  <rect width="400" height="480" fill="#1a0f33"/>
+  <ellipse cx="200" cy="420" rx="130" ry="18" fill="rgba(132,204,22,0.3)"/>
+  <ellipse cx="200" cy="240" rx="55" ry="130" fill="#84cc16" stroke="#111" stroke-width="5"/>
+  <ellipse cx="200" cy="240" rx="38" ry="105" fill="#a3e635"/>
+  <circle cx="175" cy="180" r="10" fill="#fff" stroke="#111" stroke-width="3"/>
+  <circle cx="225" cy="180" r="10" fill="#fff" stroke="#111" stroke-width="3"/>
+  <circle cx="177" cy="182" r="4" fill="#111"/>
+  <circle cx="227" cy="182" r="4" fill="#111"/>
+  <path d="M170 210 Q200 225 230 210" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+  <path d="M145 120 Q200 60 255 120" fill="none" stroke="#4d7c0f" stroke-width="6" stroke-linecap="round"/>
+  <text x="200" y="460" text-anchor="middle" font-family="Comic Sans MS, cursive" font-size="18" fill="#84cc16" stroke="#111" stroke-width="1">I'M PICKLE RICK!</text>
+</svg>

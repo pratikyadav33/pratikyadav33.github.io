@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#120a24"/>
+  <path d="M120 300 Q200 80 320 200 T520 120" fill="none" stroke="#4338ca" stroke-width="3"/>
+  <path d="M120 300 Q240 180 360 260 T520 120" fill="none" stroke="#97ce4c" stroke-width="2" stroke-dasharray="8 6"/>
+  <circle cx="320" cy="200" r="40" fill="#d946ef" stroke="#111" stroke-width="4"/>
+  <text x="320" y="208" text-anchor="middle" font-family="Comic Sans MS, cursive" font-size="28" fill="#fff" stroke="#111" stroke-width="1">L</text>
+</svg>

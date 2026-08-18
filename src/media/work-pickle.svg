@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#120a24"/>
+  <ellipse cx="320" cy="210" rx="140" ry="90" fill="#84cc16" stroke="#111" stroke-width="5"/>
+  <circle cx="280" cy="190" r="8" fill="#111"/>
+  <circle cx="360" cy="190" r="8" fill="#111"/>
+  <path d="M300 230 Q320 250 340 230" fill="none" stroke="#111" stroke-width="4" stroke-linecap="round"/>
+  <text x="320" y="340" text-anchor="middle" font-family="Comic Sans MS, cursive" font-size="22" fill="#97ce4c" stroke="#111" stroke-width="1">embedding dim = 2</text>
+</svg>
