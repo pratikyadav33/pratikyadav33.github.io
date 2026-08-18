@@ -1,26 +1,26 @@
 [
   {
-    "name": "Portal-Gun Optimizer",
-    "url": "#portal-gun",
-    "blurb": "Skip local minima by tunneling through loss barriers. 97% convergence. 3% existential dread.",
-    "image": "/media/work-portal.svg"
+    "name": "PEFT",
+    "url": "https://github.com/pratikyadav33/PEFT",
+    "blurb": "Parameter-efficient fine-tuning experiments.",
+    "image": "/media/work-1.svg"
   },
   {
-    "name": "Multiverse Agent Swarm",
-    "url": "#agents",
-    "blurb": "Parallel gradient-descent agents across infinite dimensions. One of them might finish your thesis.",
-    "image": "/media/work-agents.svg"
+    "name": "VideoMAEv2",
+    "url": "https://github.com/pratikyadav33/VideoMAEv2",
+    "blurb": "Video masked autoencoder work.",
+    "image": "/media/work-2.svg"
   },
   {
-    "name": "Neural Cromulon Classifier",
-    "url": "#cromulon",
-    "blurb": "Deep net trained on interdimensional signals. Performance metric: how loud the hit is.",
-    "image": "/media/work-net.svg"
+    "name": "covidhelper",
+    "url": "https://github.com/pratikyadav33/covidhelper",
+    "blurb": "COVID resource helper.",
+    "image": "/media/work-3.svg"
   },
   {
-    "name": "Pickle Embedding Space",
-    "url": "#pickle",
-    "blurb": "Low-rank representation learning when you've made some life choices.",
-    "image": "/media/work-pickle.svg"
+    "name": "Neural-Network-Visualizer",
+    "url": "https://github.com/pratikyadav33/Neural-Network-Visualizer",
+    "blurb": "Visualizing neural networks.",
+    "image": "/media/work-4.svg"
   }
 ]

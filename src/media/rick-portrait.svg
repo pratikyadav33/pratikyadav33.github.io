@@ -1,18 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" role="img" aria-label="Cartoon scientist portrait">
-  <rect width="400" height="480" fill="#1a0f33"/>
-  <ellipse cx="200" cy="420" rx="130" ry="18" fill="rgba(151,206,76,0.25)"/>
-  <circle cx="200" cy="175" r="95" fill="#d4a574" stroke="#111" stroke-width="4"/>
-  <path d="M105 120 Q200 20 295 120 Q280 60 200 45 Q120 60 105 120" fill="#9ae6b4" stroke="#111" stroke-width="4"/>
-  <path d="M110 130 Q200 80 290 130 L285 95 Q200 55 115 95 Z" fill="#9ae6b4" stroke="#111" stroke-width="3"/>
-  <ellipse cx="168" cy="175" rx="14" ry="18" fill="#fff" stroke="#111" stroke-width="3"/>
-  <ellipse cx="232" cy="175" rx="14" ry="18" fill="#fff" stroke="#111" stroke-width="3"/>
-  <circle cx="172" cy="178" r="5" fill="#111"/>
-  <circle cx="236" cy="178" r="5" fill="#111"/>
-  <path d="M155 210 Q200 235 245 210" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round"/>
-  <path d="M200 220 Q210 250 200 255 Q185 248 200 220" fill="#111"/>
-  <rect x="95" y="255" width="210" height="180" rx="12" fill="#e2e8f0" stroke="#111" stroke-width="4"/>
-  <rect x="155" y="255" width="90" height="50" fill="#97ce4c" stroke="#111" stroke-width="3"/>
-  <circle cx="320" cy="300" r="28" fill="#97ce4c" stroke="#111" stroke-width="4"/>
-  <ellipse cx="320" cy="300" rx="18" ry="7" fill="#1a0f33" stroke="#111" stroke-width="2"/>
-  <text x="200" y="460" text-anchor="middle" font-family="Comic Sans MS, cursive" font-size="16" fill="#97ce4c" stroke="#111" stroke-width="1">Ph.D. · C-137</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" role="img" aria-label="Portrait">
+  <rect width="400" height="480" fill="#15122a"/>
+  <circle cx="200" cy="175" r="95" fill="#d4a574" stroke="#334155" stroke-width="2"/>
+  <path d="M105 120 Q200 20 295 120 Q280 60 200 45 Q120 60 105 120" fill="#94a3b8" stroke="#334155" stroke-width="2"/>
+  <ellipse cx="168" cy="175" rx="14" ry="18" fill="#fff" stroke="#334155" stroke-width="2"/>
+  <ellipse cx="232" cy="175" rx="14" ry="18" fill="#fff" stroke="#334155" stroke-width="2"/>
+  <circle cx="172" cy="178" r="5" fill="#1e293b"/>
+  <circle cx="236" cy="178" r="5" fill="#1e293b"/>
+  <path d="M160 210 Q200 228 240 210" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"/>
+  <rect x="95" y="255" width="210" height="180" rx="8" fill="#e2e8f0" stroke="#334155" stroke-width="2"/>
+  <rect x="155" y="255" width="90" height="50" fill="#6ee7a0" stroke="#334155" stroke-width="2"/>
 </svg>

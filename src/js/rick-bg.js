@@ -5,11 +5,16 @@
   const ctx = canvas.getContext("2d", { alpha: false });
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const OUTLINE = "#111";
-  const PORTAL = "#97ce4c";
-  const CYAN = "#22d3ee";
-  const MAGENTA = "#d946ef";
+  const PORTAL = "#6ee7a0";
+  const CYAN = "#67e8f9";
   const VOID = "#0a0618";
+
+  const GRID = 120;
+  const SPAN = 14;
+  const HEIGHT_SCALE = 0.68;
+  const AZIMUTH = 0.82;
+  const ELEVATION = 0.34;
+  const ZOOM = 1.14;
 
   let width = 0;
   let height = 0;
@@ -20,17 +25,17 @@
   let nodes = [];
   let portals = [];
   let agentCount = 18;
-  let pickleMode = false;
-  let pickleHop = 0;
+  let heights = [];
+  let zRange = { min: -1, max: 1 };
 
   const rand = (a, b) => a + Math.random() * (b - a);
 
   function makeAgent() {
     return {
-      x: rand(0.15, 0.85),
-      z: rand(0.15, 0.85),
+      x: rand(-SPAN * 0.35, SPAN * 0.35),
+      y: rand(-SPAN * 0.35, SPAN * 0.35),
       vx: 0,
-      vz: 0,
+      vy: 0,
       trail: [],
       hue: Math.random() > 0.5 ? PORTAL : CYAN,
     };
@@ -51,157 +56,210 @@
     canvas.style.height = `${height}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     seedScene();
+    updateHeights(0);
   }
 
-  function lossField(x, z, t) {
-    const phase = reduceMotion ? 0 : t * 0.00008;
-    const r = Math.hypot(x - 0.5, z - 0.5);
-    const bump = Math.exp(-((r - 0.18) ** 2) / 0.012) * 0.9;
-    const bump2 = Math.exp(-((r - 0.42) ** 2) / 0.04) * 0.45;
-    const rip = Math.sin(x * 11 + phase) * Math.cos(z * 9 - phase) * 0.08;
-    return bump + bump2 + rip + 0.12;
+  function lossField(x, y, t) {
+    const phase = reduceMotion ? 0 : t * 0.00005;
+    const drift = reduceMotion ? 0 : Math.sin(phase) * 0.35;
+    const s = 1 / SPAN;
+
+    const u = (x * s + y * s + 1) * 0.707;
+    const v = (x * s - y * s) * 0.707;
+    const doubleWell = 0.38 * (u * u - 0.82) ** 2 + 0.22 * v * v;
+
+    const mx = SPAN * (0.24 + drift * 0.015);
+    const my = SPAN * (-0.22 - drift * 0.012);
+    const deepMin = -0.62 * Math.exp(-((x - mx) ** 2 + (y - my) ** 2) / (SPAN * 0.22));
+
+    const sx = SPAN * (-0.22 - drift * 0.01);
+    const sy = SPAN * (0.22 + drift * 0.014);
+    const shallowMin = -0.28 * Math.exp(-((x - sx) ** 2 + (y - sy) ** 2) / (SPAN * 0.42));
+
+    const ridge = 0.18 * Math.exp(-((x ** 2 + y ** 2)) / (SPAN * SPAN * 0.55));
+
+    const rip =
+      0.04 * Math.sin(x * 0.55 + phase) * Math.cos(y * 0.48 - phase * 0.7) +
+      0.025 * Math.sin(x * 1.1 - y * 0.9 + phase * 0.5);
+
+    return -(doubleWell + deepMin + shallowMin + ridge + rip + 0.28);
+  }
+
+  function updateHeights(time) {
+    heights = [];
+    zRange = { min: Infinity, max: -Infinity };
+    const step = (SPAN * 2) / (GRID - 1);
+    for (let j = 0; j < GRID; j += 1) {
+      const row = [];
+      for (let i = 0; i < GRID; i += 1) {
+        const x = -SPAN + i * step;
+        const y = -SPAN + j * step;
+        const z = lossField(x, y, time);
+        row.push(z);
+        zRange.min = Math.min(zRange.min, z);
+        zRange.max = Math.max(zRange.max, z);
+      }
+      heights.push(row);
+    }
+  }
+
+  function toView(gx, gy, gz) {
+    const z = gz * HEIGHT_SCALE;
+    const ca = Math.cos(AZIMUTH);
+    const sa = Math.sin(AZIMUTH);
+    const xr = gx * ca - gy * sa;
+    const yr = gx * sa + gy * ca;
+    const ce = Math.cos(ELEVATION);
+    const se = Math.sin(ELEVATION);
+    return [xr, z * ce + yr * se, yr * ce - z * se];
+  }
+
+  function fitScale() {
+    return Math.min(width, height) * 0.118 * ZOOM;
+  }
+
+  function project(viewX, viewY, depth) {
+    const scale = fitScale();
+    return [width * 0.5 + viewX * scale, height * 0.56 - viewY * scale, depth];
+  }
+
+  function projectWorld(x, y, t) {
+    const z = lossField(x, y, t);
+    const [vx, vy, depth] = toView(x, y, z);
+    const [sx, sy] = project(vx, vy, depth);
+    return { x: sx, y: sy, depth };
+  }
+
+  function heat(z) {
+    const span = Math.max(zRange.max - zRange.min, 0.001);
+    const t = Math.max(0, Math.min(1, (z - zRange.min) / span));
+    const stops = [
+      [0.0, [24, 36, 74]],
+      [0.22, [30, 64, 175]],
+      [0.42, [14, 165, 233]],
+      [0.58, [52, 211, 153]],
+      [0.72, [110, 231, 160]],
+      [0.86, [192, 132, 252]],
+      [1.0, [168, 85, 247]],
+    ];
+    for (let i = 0; i < stops.length - 1; i += 1) {
+      const [a, ca] = stops[i];
+      const [b, cb] = stops[i + 1];
+      if (t >= a && t <= b) {
+        const u = (t - a) / (b - a);
+        return `rgb(${Math.round(ca[0] + (cb[0] - ca[0]) * u)}, ${Math.round(ca[1] + (cb[1] - ca[1]) * u)}, ${Math.round(ca[2] + (cb[2] - ca[2]) * u)})`;
+      }
+    }
+    return "rgb(168, 85, 247)";
   }
 
   function seedScene() {
-    stars = Array.from({ length: 120 }, () => ({
+    stars = Array.from({ length: 80 }, () => ({
       x: Math.random(),
-      y: Math.random(),
-      r: rand(0.5, 2),
+      y: Math.random() * 0.42,
+      r: rand(0.4, 1.4),
       tw: rand(0, Math.PI * 2),
     }));
 
     seedAgents(agentCount);
 
-    nodes = Array.from({ length: 24 }, () => ({
+    nodes = Array.from({ length: 14 }, () => ({
       x: rand(0.05, 0.95),
-      y: rand(0.05, 0.45),
+      y: rand(0.05, 0.28),
       links: [],
     }));
     for (const node of nodes) {
-      const count = 2 + Math.floor(Math.random() * 3);
+      const count = 2 + Math.floor(Math.random() * 2);
       for (let i = 0; i < count; i += 1) {
         node.links.push(nodes[Math.floor(Math.random() * nodes.length)]);
       }
     }
 
     portals = [
-      { x: 0.82, y: 0.18, r: 0.09, spin: 0 },
-      { x: 0.14, y: 0.28, r: 0.06, spin: 1.2 },
-      { x: 0.52, y: 0.1, r: 0.045, spin: 2.4 },
+      { x: 0.78, y: 0.14, r: 0.06, spin: 0 },
+      { x: 0.16, y: 0.2, r: 0.04, spin: 1.2 },
     ];
   }
 
-  function project(ix, iz, h, t) {
-    const cx = width * 0.5;
-    const cy = height * 0.62;
-    const scale = Math.min(width, height) * 0.92;
-    const angle = reduceMotion ? 0.55 : 0.55 + Math.sin(t * 0.00005) * 0.04;
-    const rx = (ix - 0.5) * Math.cos(angle) - (iz - 0.5) * Math.sin(angle);
-    const rz = (ix - 0.5) * Math.sin(angle) + (iz - 0.5) * Math.cos(angle);
-    return {
-      x: cx + rx * scale,
-      y: cy + rz * scale * 0.52 - h * scale * 0.38,
-      depth: rz,
-    };
-  }
-
   function drawVoid(t) {
-    const g = ctx.createRadialGradient(width * 0.5, height * 0.35, 0, width * 0.5, height * 0.5, Math.max(width, height) * 0.75);
-    g.addColorStop(0, "#1a0f33");
-    g.addColorStop(0.45, "#120a24");
+    const g = ctx.createLinearGradient(0, 0, 0, height);
+    g.addColorStop(0, "#15122a");
+    g.addColorStop(0.55, "#0e0b1a");
     g.addColorStop(1, VOID);
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, width, height);
 
     for (const s of stars) {
-      const tw = reduceMotion ? 0.7 : 0.35 + Math.sin(t * 0.003 + s.tw) * 0.65;
-      ctx.fillStyle = `rgba(255,255,255,${tw * 0.9})`;
+      const tw = reduceMotion ? 0.5 : 0.25 + Math.sin(t * 0.003 + s.tw) * 0.45;
+      ctx.fillStyle = `rgba(255,255,255,${tw * 0.55})`;
       ctx.beginPath();
       ctx.arc(s.x * width, s.y * height, s.r, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
-  function drawLossMesh(t) {
-    const grid = 28;
-    const pts = [];
-    for (let i = 0; i <= grid; i += 1) {
-      pts[i] = [];
-      for (let j = 0; j <= grid; j += 1) {
-        const x = i / grid;
-        const z = j / grid;
-        const h = lossField(x, z, t);
-        pts[i][j] = { ...project(x, z, h, t), h };
-      }
-    }
+  function drawLossSurface(t) {
+    if (!reduceMotion) updateHeights(t);
 
-    for (let i = 0; i < grid; i += 1) {
-      for (let j = 0; j < grid; j += 1) {
-        const p = pts[i][j];
-        const q = pts[i + 1][j];
-        const r = pts[i][j + 1];
-        const avg = (p.h + q.h + r.h) / 3;
-        const col = avg > 0.55 ? MAGENTA : avg > 0.35 ? PORTAL : "#4338ca";
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(q.x, q.y);
-        ctx.lineTo(r.x, r.y);
-        ctx.closePath();
-        ctx.fillStyle = col;
-        ctx.globalAlpha = 0.55 + avg * 0.35;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = OUTLINE;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-    }
+    const step = (SPAN * 2) / (GRID - 1);
+    const faces = [];
 
-    const contours = [0.25, 0.4, 0.55, 0.7];
-    ctx.setLineDash([5, 7]);
-    for (const level of contours) {
-      ctx.strokeStyle = `rgba(151, 206, 76, ${0.35 + level * 0.3})`;
-      ctx.lineWidth = 1.5;
-      for (let i = 0; i < grid; i += 1) {
-        for (let j = 0; j < grid; j += 1) {
-          const a = pts[i][j].h;
-          const b = pts[i + 1][j].h;
-          const c = pts[i][j + 1].h;
-          if ((a - level) * (b - level) < 0) {
-            const tL = (level - a) / (b - a);
-            ctx.beginPath();
-            ctx.moveTo(pts[i][j].x + (pts[i + 1][j].x - pts[i][j].x) * tL, pts[i][j].y + (pts[i + 1][j].y - pts[i][j].y) * tL);
-            ctx.lineTo(pts[i][j].x + (pts[i + 1][j].x - pts[i][j].x) * tL + 2, pts[i][j].y + (pts[i + 1][j].y - pts[i][j].y) * tL);
-            ctx.stroke();
-          }
-          if ((a - level) * (c - level) < 0) {
-            const tL = (level - a) / (c - a);
-            ctx.beginPath();
-            ctx.moveTo(pts[i][j].x + (pts[i][j + 1].x - pts[i][j].x) * tL, pts[i][j].y + (pts[i][j + 1].y - pts[i][j].y) * tL);
-            ctx.lineTo(pts[i][j].x + (pts[i][j + 1].x - pts[i][j].x) * tL + 2, pts[i][j].y + (pts[i][j + 1].y - pts[i][j].y) * tL);
-            ctx.stroke();
-          }
+    for (let j = 0; j < GRID - 1; j += 1) {
+      for (let i = 0; i < GRID - 1; i += 1) {
+        const x0 = -SPAN + i * step;
+        const y0 = -SPAN + j * step;
+        const x1 = x0 + step;
+        const y1 = y0 + step;
+        const z00 = heights[j][i];
+        const z10 = heights[j][i + 1];
+        const z01 = heights[j + 1][i];
+        const z11 = heights[j + 1][i + 1];
+
+        const tris = [
+          { pts: [[x0, y0, z00], [x1, y0, z10], [x1, y1, z11]], avg: (z00 + z10 + z11) / 3 },
+          { pts: [[x0, y0, z00], [x1, y1, z11], [x0, y1, z01]], avg: (z00 + z11 + z01) / 3 },
+        ];
+
+        for (const tri of tris) {
+          const projected = tri.pts.map(([x, y, z]) => {
+            const [vx, vy, depth] = toView(x, y, z);
+            return project(vx, vy, depth);
+          });
+          const depth = projected.reduce((sum, p) => sum + p[2], 0) / 3;
+          faces.push({ projected, depth, avg: tri.avg });
         }
       }
     }
-    ctx.setLineDash([]);
+
+    faces.sort((a, b) => a.depth - b.depth);
+
+    for (const face of faces) {
+      const [p0, p1, p2] = face.projected;
+      ctx.beginPath();
+      ctx.moveTo(p0[0], p0[1]);
+      ctx.lineTo(p1[0], p1[1]);
+      ctx.lineTo(p2[0], p2[1]);
+      ctx.closePath();
+      ctx.fillStyle = heat(face.avg);
+      ctx.fill();
+    }
   }
 
   function gradStep(agent, t) {
-    const eps = 0.008;
-    const h = lossField(agent.x, agent.z, t);
-    const hx = lossField(agent.x + eps, agent.z, t);
-    const hz = lossField(agent.x, agent.z + eps, t);
+    const eps = 0.08;
+    const h = lossField(agent.x, agent.y, t);
+    const hx = lossField(agent.x + eps, agent.y, t);
+    const hy = lossField(agent.x, agent.y + eps, t);
     const gx = (hx - h) / eps;
-    const gz = (hz - h) / eps;
-    const lr = 0.012;
-    agent.vx = agent.vx * 0.82 - gx * lr;
-    agent.vz = agent.vz * 0.82 - gz * lr;
-    agent.x = Math.min(0.92, Math.max(0.08, agent.x + agent.vx));
-    agent.z = Math.min(0.92, Math.max(0.08, agent.z + agent.vz));
-    const p = project(agent.x, agent.z, lossField(agent.x, agent.z, t), t);
+    const gy = (hy - h) / eps;
+    const lr = 0.06;
+    agent.vx = agent.vx * 0.84 - gx * lr;
+    agent.vy = agent.vy * 0.84 - gy * lr;
+    agent.x = Math.min(SPAN * 0.85, Math.max(-SPAN * 0.85, agent.x + agent.vx));
+    agent.y = Math.min(SPAN * 0.85, Math.max(-SPAN * 0.85, agent.y + agent.vy));
+    const p = projectWorld(agent.x, agent.y, t);
     agent.trail.push(p);
-    if (agent.trail.length > 28) agent.trail.shift();
+    if (agent.trail.length > 24) agent.trail.shift();
   }
 
   function drawAgents(t) {
@@ -209,8 +267,8 @@
       if (!reduceMotion) gradStep(agent, t);
 
       if (agent.trail.length > 1) {
-        ctx.strokeStyle = agent.hue === PORTAL ? "rgba(151,206,76,0.35)" : "rgba(34,211,238,0.35)";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = agent.hue === PORTAL ? "rgba(110,231,160,0.28)" : "rgba(103,232,249,0.28)";
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(agent.trail[0].x, agent.trail[0].y);
         for (let i = 1; i < agent.trail.length; i += 1) {
@@ -219,30 +277,29 @@
         ctx.stroke();
       }
 
-      const p = project(agent.x, agent.z, lossField(agent.x, agent.z, t), t);
+      const p = projectWorld(agent.x, agent.y, t);
       ctx.fillStyle = agent.hue;
+      ctx.globalAlpha = 0.9;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = OUTLINE;
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      ctx.globalAlpha = 1;
     }
   }
 
   function drawNeuralNet(t) {
-    const ox = width * 0.08;
-    const oy = height * 0.08;
-    const flicker = reduceMotion ? 1 : 0.6 + Math.sin(t * 0.005) * 0.4;
+    const ox = width * 0.06;
+    const oy = height * 0.06;
+    const flicker = reduceMotion ? 1 : 0.65 + Math.sin(t * 0.004) * 0.25;
 
     for (const node of nodes) {
-      const nx = ox + node.x * width * 0.34;
-      const ny = oy + node.y * height * 0.22;
+      const nx = ox + node.x * width * 0.28;
+      const ny = oy + node.y * height * 0.18;
       for (const link of node.links) {
-        const lx = ox + link.x * width * 0.34;
-        const ly = oy + link.y * height * 0.22;
-        ctx.strokeStyle = `rgba(151, 206, 76, ${0.15 * flicker})`;
-        ctx.lineWidth = 1.5;
+        const lx = ox + link.x * width * 0.28;
+        const ly = oy + link.y * height * 0.18;
+        ctx.strokeStyle = `rgba(110, 231, 160, ${0.06 * flicker})`;
+        ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(nx, ny);
         ctx.lineTo(lx, ly);
@@ -251,40 +308,23 @@
     }
 
     for (const node of nodes) {
-      const nx = ox + node.x * width * 0.34;
-      const ny = oy + node.y * height * 0.22;
-      ctx.fillStyle = CYAN;
+      const nx = ox + node.x * width * 0.28;
+      const ny = oy + node.y * height * 0.18;
+      ctx.fillStyle = `rgba(103, 232, 249, ${0.4 * flicker})`;
       ctx.beginPath();
-      ctx.arc(nx, ny, 5, 0, Math.PI * 2);
+      ctx.arc(nx, ny, 2.5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = OUTLINE;
-      ctx.lineWidth = 2;
-      ctx.stroke();
     }
-
-    ctx.font = `bold ${Math.max(10, width * 0.009)}px "Comic Sans MS", cursive`;
-    ctx.fillStyle = PORTAL;
-    ctx.strokeStyle = OUTLINE;
-    ctx.lineWidth = 2.5;
-    ctx.strokeText("DEEP NET C-137", ox, oy - 8);
-    ctx.fillText("DEEP NET C-137", ox, oy - 8);
   }
 
-  function drawPortalRing(cx, cy, r, spin, t) {
+  function drawPortalRing(cx, cy, r, spin, time) {
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate(spin + (reduceMotion ? 0 : t * 0.00035));
-    ctx.fillStyle = PORTAL;
+    ctx.rotate(spin + (reduceMotion ? 0 : time * 0.0002));
+    ctx.strokeStyle = "rgba(110, 231, 160, 0.18)";
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.ellipse(0, 0, r, r * 0.34, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = OUTLINE;
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.fillStyle = VOID;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, r * 0.68, r * 0.22, 0, 0, Math.PI * 2);
-    ctx.fill();
     ctx.stroke();
     ctx.restore();
   }
@@ -295,72 +335,17 @@
     }
   }
 
-  function drawPickleRick(t) {
-    if (!pickleMode) return;
-
-    pickleHop = reduceMotion ? 0 : Math.sin(t * 0.003) * 0.04;
-    const px = 0.5 + Math.sin(t * 0.0004) * 0.12;
-    const pz = 0.5 + pickleHop;
-    const ph = lossField(px, pz, t);
-    const p = project(px, pz, ph + 0.08, t);
-
-    ctx.save();
-    ctx.translate(p.x, p.y - 28);
-    ctx.rotate(Math.sin(t * 0.002) * 0.15);
-
-    ctx.fillStyle = "#84cc16";
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 14, 32, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = OUTLINE;
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(-5, -10, 4, 0, Math.PI * 2);
-    ctx.arc(5, -10, 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = OUTLINE;
-    ctx.beginPath();
-    ctx.arc(-4, -9, 1.5, 0, Math.PI * 2);
-    ctx.arc(6, -9, 1.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.font = `bold ${Math.max(9, width * 0.008)}px "Comic Sans MS", cursive`;
-    ctx.fillStyle = "#84cc16";
-    ctx.strokeStyle = OUTLINE;
-    ctx.lineWidth = 2;
-    ctx.strokeText("PICKLE RICK", -28, 44);
-    ctx.fillText("PICKLE RICK", -28, 44);
-    ctx.restore();
-  }
-
-  function drawLabels(t) {
-    const pulse = reduceMotion ? 0 : Math.sin(t * 0.001) * 3;
-    ctx.font = `bold ${Math.max(12, width * 0.013)}px "Comic Sans MS", cursive`;
-    const labels = [
-      { text: "LOSS MANIFOLD", x: 0.52, y: 0.88 },
-      { text: "AUTONOMOUS AGENTS", x: 0.08, y: 0.42 },
-      { text: "∂L/∂θ → 0 (maybe)", x: 0.58, y: 0.14 },
-      { text: "PhD THESIS FIELD", x: 0.22, y: 0.72 },
-    ];
-    for (const lb of labels) {
-      const x = lb.x * width;
-      const y = lb.y * height + pulse;
-      ctx.strokeStyle = OUTLINE;
-      ctx.lineWidth = 3;
-      ctx.strokeText(lb.text, x, y);
-      ctx.fillStyle = lb.text.includes("PhD") ? MAGENTA : PORTAL;
-      ctx.fillText(lb.text, x, y);
-    }
-  }
-
   function vignette() {
-    const v = ctx.createRadialGradient(width * 0.5, height * 0.5, width * 0.1, width * 0.5, height * 0.5, Math.max(width, height) * 0.72);
+    const v = ctx.createRadialGradient(
+      width * 0.5,
+      height * 0.5,
+      width * 0.12,
+      width * 0.5,
+      height * 0.5,
+      Math.max(width, height) * 0.74
+    );
     v.addColorStop(0, "rgba(0,0,0,0)");
-    v.addColorStop(1, "rgba(5, 3, 12, 0.55)");
+    v.addColorStop(1, "rgba(5, 3, 12, 0.58)");
     ctx.fillStyle = v;
     ctx.fillRect(0, 0, width, height);
   }
@@ -373,12 +358,10 @@
     running = true;
     const t = now - start;
     drawVoid(t);
-    drawLossMesh(t);
+    drawLossSurface(t);
     drawAgents(t);
-    drawPickleRick(t);
     drawNeuralNet(t);
     drawPortals(t);
-    drawLabels(t);
     vignette();
     if (!reduceMotion) requestAnimationFrame(frame);
   }
@@ -386,9 +369,6 @@
   window.RickLab = {
     setAgentCount(count) {
       seedAgents(Number(count) || 18);
-    },
-    setPickleMode(on) {
-      pickleMode = Boolean(on);
     },
     getAgentCount() {
       return agentCount;

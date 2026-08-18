@@ -14,6 +14,28 @@
   let zRange = { min: -1, max: 2 };
   let start = performance.now();
   let running = false;
+  let agents = [];
+  let currentCamera = {
+    azimuth: 0.75,
+    elevation: 0.55,
+    zoomMul: 1.08,
+  };
+
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  function makeAgent() {
+    return {
+      x: rand(-SPAN * 0.75, SPAN * 0.75),
+      y: rand(-SPAN * 0.75, SPAN * 0.75),
+      vx: 0,
+      vy: 0,
+      trail: [],
+    };
+  }
+
+  function seedAgents() {
+    agents = Array.from({ length: 24 }, makeAgent);
+  }
 
   const HEIGHT_SCALE = 0.72;
 
@@ -35,8 +57,8 @@
     { x: 0.65, y: 0.45, a: -0.6, s: 0.22, px: 1.5, py: 0.2, dx: 1.0, dy: 0.8 },
   ];
 
-  const BLEND_MS = 8500;
-  const HOLD_MS = 11000;
+  const BLEND_MS = 12000;
+  const HOLD_MS = 16000;
 
   const CAMERA_TOUR = [
     { azimuth: 0.75, elevation: 0.55, zoomMul: 1.08 },
@@ -205,7 +227,7 @@
   }
 
   function surfaceHeight(x, y, time) {
-    const phase = time * 0.0001;
+    const phase = time * 0.00005;
     let z = 0;
     for (const b of BUMPS) {
       const bx = b.x + Math.sin(phase * b.dx + b.px) * 0.42;
@@ -224,13 +246,14 @@
     const span = Math.max(zRange.max - zRange.min, 0.001);
     const t = Math.max(0, Math.min(1, (z - zRange.min) / span));
     const stops = [
-      [0.0, [24, 36, 74]],
-      [0.22, [30, 64, 175]],
-      [0.42, [14, 165, 233]],
-      [0.58, [52, 211, 153]],
-      [0.72, [250, 204, 21]],
-      [0.86, [249, 115, 22]],
-      [1.0, [220, 38, 38]],
+      [0.0, [12, 20, 48]],
+      [0.2, [18, 40, 88]],
+      [0.38, [22, 72, 118]],
+      [0.52, [28, 110, 128]],
+      [0.66, [40, 130, 118]],
+      [0.8, [72, 118, 148]],
+      [0.92, [100, 88, 148]],
+      [1.0, [130, 72, 120]],
     ];
     for (let i = 0; i < stops.length - 1; i += 1) {
       const [a, ca] = stops[i];
@@ -240,7 +263,7 @@
         return `rgb(${Math.round(ca[0] + (cb[0] - ca[0]) * u)}, ${Math.round(ca[1] + (cb[1] - ca[1]) * u)}, ${Math.round(ca[2] + (cb[2] - ca[2]) * u)})`;
       }
     }
-    return "rgb(220, 38, 38)";
+    return "rgb(68, 48, 88)";
   }
 
   function updateHeights(time) {
@@ -270,7 +293,65 @@
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    seedAgents();
     updateHeights(0);
+  }
+
+  function projectWorld(x, y, time, cam) {
+    const z = surfaceHeight(x, y, time);
+    const [vx, vy, depth] = toView(x, y, z, cam.azimuth, cam.elevation);
+    const [sx, sy] = project(vx, vy, depth, cam.zoomMul);
+    return { x: sx, y: sy, depth };
+  }
+
+  function gradStep(agent, time) {
+    const eps = 0.045;
+    const h = surfaceHeight(agent.x, agent.y, time);
+    const hx = surfaceHeight(agent.x + eps, agent.y, time);
+    const hy = surfaceHeight(agent.x, agent.y + eps, time);
+    const gx = (hx - h) / eps;
+    const gy = (hy - h) / eps;
+    agent.vx = agent.vx * 0.91 - gx * 0.028;
+    agent.vy = agent.vy * 0.91 - gy * 0.028;
+    agent.x = Math.min(SPAN * 0.88, Math.max(-SPAN * 0.88, agent.x + agent.vx));
+    agent.y = Math.min(SPAN * 0.88, Math.max(-SPAN * 0.88, agent.y + agent.vy));
+    const p = projectWorld(agent.x, agent.y, time, currentCamera);
+    agent.trail.push(p);
+    if (agent.trail.length > 18) agent.trail.shift();
+  }
+
+  function drawAgents(time) {
+    for (const agent of agents) {
+      if (!reduceMotion) gradStep(agent, time);
+
+      if (agent.trail.length > 1) {
+        ctx.lineWidth = 1;
+        ctx.lineCap = "round";
+        for (let i = 1; i < agent.trail.length; i += 1) {
+          const prev = agent.trail[i - 1];
+          const curr = agent.trail[i];
+          const fade = i / agent.trail.length;
+          ctx.strokeStyle = `rgba(186, 210, 228, ${0.08 + fade * 0.16})`;
+          ctx.beginPath();
+          ctx.moveTo(prev.x, prev.y);
+          ctx.lineTo(curr.x, curr.y);
+          ctx.stroke();
+        }
+      }
+
+      const p = projectWorld(agent.x, agent.y, time, currentCamera);
+      const z = surfaceHeight(agent.x, agent.y, time);
+      ctx.fillStyle = heat(z);
+      ctx.globalAlpha = 0.72;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(220, 235, 245, 0.55)";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 0.9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
   }
 
   function drawBackdrop() {
@@ -282,7 +363,7 @@
     ctx.fillRect(0, 0, width, height);
 
     const glow = ctx.createRadialGradient(width * 0.55, height * 0.18, 0, width * 0.55, height * 0.18, width * 0.45);
-    glow.addColorStop(0, "rgba(56, 189, 248, 0.12)");
+    glow.addColorStop(0, "rgba(56, 189, 248, 0.1)");
     glow.addColorStop(1, "rgba(56, 189, 248, 0)");
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, width, height);
@@ -291,7 +372,8 @@
   function drawSurface(time) {
     if (view.holdUntil === 0) view.holdUntil = time + HOLD_MS;
     updateViewSchedule(time);
-    const { azimuth, elevation, zoomMul } = currentView(time);
+    const cam = currentView(time);
+    currentCamera = cam;
     if (!reduceMotion) updateHeights(time);
 
     const step = (SPAN * 2) / (GRID - 1);
@@ -315,8 +397,8 @@
 
         for (const tri of tris) {
           const projected = tri.pts.map(([x, y, z]) => {
-            const [vx, vy, depth] = toView(x, y, z, azimuth, elevation);
-            return project(vx, vy, depth, zoomMul);
+            const [vx, vy, depth] = toView(x, y, z, cam.azimuth, cam.elevation);
+            return project(vx, vy, depth, cam.zoomMul);
           });
           const depth = projected.reduce((sum, p) => sum + p[2], 0) / 3;
           faces.push({ projected, depth, avg: tri.avg });
@@ -338,29 +420,10 @@
     }
   }
 
-  function drawLegend() {
-    const x = width - 26;
-    const top = height * 0.22;
-    const h = height * 0.34;
-    for (let i = 0; i < h; i += 1) {
-      const z = zRange.max - (i / h) * (zRange.max - zRange.min);
-      ctx.strokeStyle = heat(z);
-      ctx.beginPath();
-      ctx.moveTo(x, top + i);
-      ctx.lineTo(x + 10, top + i);
-      ctx.stroke();
-    }
-    ctx.fillStyle = "rgba(148, 163, 184, 0.75)";
-    ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
-    ctx.fillText("high", x - 2, top + 10);
-    ctx.fillText("loss", x - 2, top + 22);
-    ctx.fillText("low", x + 1, top + h - 4);
-  }
-
   function vignette() {
-    const v = ctx.createRadialGradient(width * 0.5, height * 0.45, width * 0.1, width * 0.5, height * 0.5, Math.max(width, height) * 0.72);
+    const v = ctx.createRadialGradient(width * 0.5, height * 0.45, width * 0.15, width * 0.5, height * 0.5, Math.max(width, height) * 0.75);
     v.addColorStop(0, "rgba(7, 11, 22, 0)");
-    v.addColorStop(1, "rgba(7, 11, 22, 0.55)");
+    v.addColorStop(1, "rgba(7, 11, 22, 0.35)");
     ctx.fillStyle = v;
     ctx.fillRect(0, 0, width, height);
   }
@@ -374,7 +437,7 @@
     const t = now - start;
     drawBackdrop();
     drawSurface(t);
-    drawLegend();
+    drawAgents(t);
     vignette();
     if (!reduceMotion) requestAnimationFrame(frame);
   }
