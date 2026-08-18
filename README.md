@@ -1,11 +1,14 @@
-# Personal site (local first)
+# pratikyadav33.github.io
 
-Profile, writing, and notes. Built with [Eleventy](https://www.11ty.dev/). GitHub Pages comes after the local preview looks right.
+Personal site for **Pratik Yadav** — profile, writing, and notes. Built with [Eleventy](https://www.11ty.dev/).
+
+**Live site:** https://pratikyadav33.github.io/
 
 ## Run locally (WSL)
 
 ```bash
-cd ~/.github.io
+git clone https://github.com/pratikyadav33/pratikyadav33.github.io.git
+cd pratikyadav33.github.io
 npm install
 npm run dev
 ```
@@ -16,7 +19,7 @@ Open [http://localhost:4000](http://localhost:4000) in your browser.
 | --- | --- |
 | `/` | Profile |
 | `/writing/` | Blog |
-| `/notes/` | Notes store |
+| `/notes/` | Notes |
 
 ## Add content
 
@@ -24,8 +27,8 @@ Open [http://localhost:4000](http://localhost:4000) in your browser.
 - Note: `src/content/notes/your-title.md`
 - Bio: `src/index.njk`
 - Site name: `src/_data/site.json`
-- Landing images: `src/media/`
+- Images: `src/media/`
 
-## Later (not done yet)
+## Publish
 
-Rename the GitHub repo to `pratikyadav33.github.io`, make it public, then publish with GitHub Pages.
+Pushes to `main` deploy automatically via GitHub Actions (`.github/workflows/pages.yml`).
